@@ -6,27 +6,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # إذا كانت ملفاتك داخل مجلد، سنخبر النظام بالدخول إليه
       - name: set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
-      - name: Grant execute permission for gradlew
+      # سنقوم بالدخول إلى المجلد الذي يحتوي على ملفات المشروع
+      # وبناء التطبيق باستخدام نسخة Gradle المثبتة على السيرفر
+      - name: Build with Gradle (Fallback Mode)
         run: |
-          # ابحث عن ملف gradlew في أي مكان وقم بإعطائه الصلاحية
-          find . -name "gradlew" -exec chmod +x {} +
-
-      - name: Build with Gradle
-        run: |
-          # ابحث عن ملف gradlew وشغله لبناء التطبيق
-          GRADLEW_PATH=$(find . -name "gradlew" | head -n 1)
-          $GRADLEW_PATH assembleDebug
+          # ابحث عن المجلد الذي يحتوي على ملف build.gradle
+          PROJECT_ROOT=$(find . -name "build.gradle*" -printf '%h\n' | head -n 1)
+          cd $PROJECT_ROOT
+          # استخدم 'gradle' بدلاً من './gradlew' لأن الملف مفقود
+          gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: my-android-app
           path: "**/build/outputs/apk/debug/*.apk"
